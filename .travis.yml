@@ -1,0 +1,25 @@
+language: generic
+sudo: required
+
+services:
+    - docker
+
+before_install:
+    - docker build -t jaumealg77/react-test -f ./client/Dockerfile.dev ./client
+
+script:
+    - docker run -e CI=true jaumealg77/react-test npm test
+
+after_success:
+    - docker build -t jaumealg77/multi-client ./client
+    - docker build -t jaumealg77/multi-nginx ./nginx
+    - docker build -t jaumealg77/multi-server ./server
+    - docker build -t jaumealg77/multi-worker ./worker
+    # Log in to the docker CLI
+    - echo "$DOCKER_PASSWRD" | docker login -u "$DOCKER_ID" --password-stdin
+    #Take those images and push them to docker hub
+    - docker push jaumealg77/multi-client
+    - docker push jaumealg77/multi-nginx
+    - docker push jaumealg77/multi-server
+    - docker push jaumealg77/multi-worker
+    
